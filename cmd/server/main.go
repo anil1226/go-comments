@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/anil1226/go-banking/internal/comment"
 	"github.com/anil1226/go-banking/internal/db"
 )
 
@@ -23,9 +24,27 @@ func Run() error {
 		fmt.Println("failed to connect to db")
 		return err
 	}
-	if err := db.Ping(context.Background()); err != nil {
+
+	fmt.Println("Successfully connected to db")
+
+	if err := db.MigrateDB(); err != nil {
+		fmt.Println("failed to migrate db")
 		return err
 	}
-	fmt.Println("Successfully connected to db")
+
+	cmtService := comment.NewService(db)
+
+	cmtService.PostComment(
+		context.Background(),
+		comment.Comment{
+			ID:     "40e6215d-b5c6-4896-987c-f30f3678f608",
+			Slug:   "test",
+			Author: "Anil",
+			Body:   "Hi!!",
+		},
+	)
+
+	fmt.Println(cmtService.GetComment(context.Background(), "40e6215d-b5c6-4896-987c-f30f3678f608"))
+
 	return nil
 }
